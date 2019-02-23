@@ -26,15 +26,26 @@ def calc_word_log_prob(count_dict, count_class):
     count_class = np.log(count_class)
     return count_dict, count_class
 
-def predict_class(review_text, theta_j_y, theta_y):
-    processed_text = utils.getStemmedDocuments(review_text)
-    num_classes = theta_j_y.shape[0]
+def predict_class(processed_text, theta_j_y, theta_y):
+    num_classes = theta_y.shape[0]
     prob_class = np.zeros(num_classes)
     for rating in range(0, num_classes):
         for word in processed_text:
             prob_class[rating] += theta_j_y[word][rating]
-        prob_class[rating] += (theta_y/np.sum(theta_y))
-    return np.exp(prob_class)
+        prob_class[rating] += theta_y[rating]
+    return prob_class
+
+def predict(test_filename, theta_j_y, theta_y):
+    review_iterator = utils.json_reader(test_filename)
+    iter = 0
+    for review in review_iterator:
+        text = review['text']
+        rating = review['stars']
+        processed_text = utils.getStemmedDocuments(text)
+        print(rating, predict_class(processed_text, theta_j_y, theta_y))
+        iter += 1
+        if iter == 10:
+            break
 
 def main(train_filename, test_filname):
     count_dict = Path('pickle_count_dict')
@@ -57,7 +68,9 @@ def main(train_filename, test_filname):
         theta_j_y, theta_y = calc_word_log_prob(count_dict, count_class)
         pickle.dump(theta_j_y, open('pickle_theta_j', 'wb'))
         pickle.dump(theta_y, open('pickle_theta_y', 'wb'))
-    print(theta_j_y)
+    predict(train_filename, theta_j_y, theta_y)
+
+
 if __name__ == '__main__':
     train_filename = '../temp/A2/data/train.json'
     test_filename = '../temp/A2/data/test.json'
