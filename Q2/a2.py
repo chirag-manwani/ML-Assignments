@@ -18,7 +18,8 @@ def create_count_dict(train_filename):
     return count_dict
 
 def main(train_filename, test_filname):
-    count_dict = create_dict_count(train_filename)
+    count_dict = create_count_dict(train_filename)
+    pickle.dump(count_dict, open('count_dict.p', 'wb'))
 
 if __name__ == '__main__':
     train_filename = '../temp/A2/data/train.json'
