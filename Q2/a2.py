@@ -4,27 +4,50 @@ import pickle
 import numpy as np
 from pathlib import Path
 
-def create_count_dict(train_filename):
-    review_iterator = utils.json_reader(train_filename)
-    count_dict = {}
-    count_class = np.ones(5)
-    for review in review_iterator:
-        text = review['text']
-        rating = int(review['stars'])
-        count_class[rating-1] += 1
-        processed_text = utils.getStemmedDocuments(text)
-        for word in processed_text:
-            if word not in count_dict:
-                count_dict[word] = np.ones(5)
-            count_dict[word][rating-1] += 1
-    return count_dict, count_class
+class NaiveBayes():
+    def __init__(self, train_filename, pickle_word_prob, pickle_class_prob):
+        self.file_name = train_filename
+        self.word_prob = {}
+        self.class_prob = [0, 0, 0, 0, 0]
 
-def calc_word_log_prob(count_dict, count_class):
-    for word in count_dict.keys():
-        count_dict[word] = np.log(count_dict[word] / count_class)
-    count_class /= np.sum(count_class)
-    count_class = np.log(count_class)
-    return count_dict, count_class
+        word_prob = Path(pickle_word_prob)
+        class_prob = Path(pickle_class_prob)
+        if word_prob.is_file():
+            self.word_prob = pickle.load(open(word_prob, 'rb'))
+            self.class_prob = pickle.load(open(class_prob, 'rb'))
+        else:
+            self.create_word_count()
+            self.calc_word_prob()
+
+    def create_word_count(self):
+        review_iterator = utils.json_reader(self.file_name)
+        for review in review_iterator:
+            text = review['text']
+            text = text.split(' ')
+            print(text)
+            rating = int(review['stars'])
+            self.class_prob[rating-1] += 1
+            for word in text:
+                if word not in self.word_prob:
+                    self.word_prob[word] = [0, 0, 0, 0, 0]
+                self.word_prob[word][rating-1] += 1
+
+    def calc_word_prob(self):
+        for word in self.word_prob.keys():
+            for class_idx in range(5):
+                self.word_prob[word][class_idx] = self.word_prob[word][class_idx] / self.class_prob[class_idx]
+        class_sum = sum(self.class_prob)
+        for class_idx in range(5):
+            self.class_prob[class_idx] /= class_sum
+
+    def fit(self):
+        print('fit')
+
+    def model(self):
+        print('model')
+
+    def predict(self):
+        print('predict')
 
 def predict_class(processed_text, theta_j_y, theta_y):
     num_classes = theta_y.shape[0]
@@ -48,28 +71,11 @@ def predict(test_filename, theta_j_y, theta_y):
             break
 
 def main(train_filename, test_filname):
-    count_dict = Path('pickle_count_dict')
+    word_prob = Path('pickle_word_prob')
     count_class = Path('pickle_count_class')
 
-    if count_dict.is_file():
-        count_dict = pickle.load(open('pickle_count_dict', 'rb'))
-        count_class = pickle.load(open('pickle_count_class', 'rb'))
-    else:
-        count_dict, count_class = create_count_dict(train_filename)
-        pickle.dump(count_dict, open('pickle_count_dict', 'wb'))
-        pickle.dump(count_class, open('pickle_count_class', 'wb'))
-    
-    theta_j_y = Path('pickle_theta_j')
-    theta_y = Path('pickle_theta_y')
-    if theta_j_y.is_file():
-        theta_j_y = pickle.load(open('pickle_theta_j', 'rb'))
-        theta_y = pickle.load(open('pickle_theta_y', 'rb'))
-    else:
-        theta_j_y, theta_y = calc_word_log_prob(count_dict, count_class)
-        pickle.dump(theta_j_y, open('pickle_theta_j', 'wb'))
-        pickle.dump(theta_y, open('pickle_theta_y', 'wb'))
-    predict(train_filename, theta_j_y, theta_y)
-
+    naive_bayes = NaiveBayes(train_filename, word_prob, count_class)
+    print(naive_bayes.word_prob)
 
 if __name__ == '__main__':
     train_filename = '../temp/A2/data/train.json'
