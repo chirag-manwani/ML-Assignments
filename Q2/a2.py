@@ -46,6 +46,8 @@ class NaiveBayes():
         else:
             self.create_word_count()
             self.calc_word_prob()
+            pickle.dump(self.word_prob, open(self.pickle_word_prob, 'wb'))
+            pickle.dump(self.class_prob, open(self.pickle_class_prob, 'wb'))
 
     def model(self, processed_text):
         num_classes = len(self.class_prob)
@@ -74,10 +76,10 @@ class NaiveBayes():
 
 def main(train_filename, test_filname):
     word_prob = Path('pickle_word_prob')
-    count_class = Path('pickle_count_class')
+    class_prob = Path('pickle_class_prob')
     option = 0
 
-    naive_bayes = NaiveBayes(train_filename, option, word_prob, count_class)
+    naive_bayes = NaiveBayes(train_filename, option, word_prob, class_prob)
     naive_bayes.fit()
 
     print(naive_bayes.word_prob)
