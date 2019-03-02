@@ -49,15 +49,26 @@ class NaiveBayes():
     def predict(self):
         print('predict')
 
-def predict_class(review_text, theta_j_y, theta_y):
-    processed_text = utils.getStemmedDocuments(review_text)
-    num_classes = theta_j_y.shape[0]
-    prob_class = np.ones(num_classes)
-    for rating in range(0, 5):
+def predict_class(processed_text, theta_j_y, theta_y):
+    num_classes = theta_y.shape[0]
+    prob_class = np.zeros(num_classes)
+    for rating in range(0, num_classes):
         for word in processed_text:
-            prob_class[rating] *= theta_j_y[word][rating]
-        prob_class[rating] *= (theta_y/np.sum(theta_y))
-    print(prob_class)
+            prob_class[rating] += theta_j_y[word][rating]
+        prob_class[rating] += theta_y[rating]
+    return prob_class
+
+def predict(test_filename, theta_j_y, theta_y):
+    review_iterator = utils.json_reader(test_filename)
+    iter = 0
+    for review in review_iterator:
+        text = review['text']
+        rating = review['stars']
+        processed_text = utils.getStemmedDocuments(text)
+        print(rating, predict_class(processed_text, theta_j_y, theta_y))
+        iter += 1
+        if iter == 10:
+            break
 
 def main(train_filename, test_filname):
     word_prob = Path('pickle_word_prob')
