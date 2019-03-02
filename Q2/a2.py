@@ -49,6 +49,16 @@ class NaiveBayes():
     def predict(self):
         print('predict')
 
+def predict_class(review_text, theta_j_y, theta_y):
+    processed_text = utils.getStemmedDocuments(review_text)
+    num_classes = theta_j_y.shape[0]
+    prob_class = np.ones(num_classes)
+    for rating in range(0, 5):
+        for word in processed_text:
+            prob_class[rating] *= theta_j_y[word][rating]
+        prob_class[rating] *= (theta_y/np.sum(theta_y))
+    print(prob_class)
+
 def main(train_filename, test_filname):
     word_prob = Path('pickle_word_prob')
     count_class = Path('pickle_count_class')
