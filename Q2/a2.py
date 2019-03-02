@@ -6,22 +6,25 @@ import math
 from pathlib import Path
 
 class NaiveBayes():
-    def __init__(self, train_filename, pickle_word_prob='', pickle_class_prob=''):
+    def __init__(self, train_filename, option, pickle_word_prob='', pickle_class_prob=''):
         self.file_name = train_filename
         self.word_prob = {}
         self.class_prob = [0, 0, 0, 0, 0]
         self.pickle_class_prob = pickle_class_prob
         self.pickle_word_prob = pickle_word_prob
+        self.process_option = option
+
+    def process_text(self, text):
+        return text.split()
 
     def create_word_count(self):
         review_iterator = utils.json_reader(self.file_name)
         for review in review_iterator:
             text = review['text']
-            text = text.split(' ')
-            print(text)
+            processed_text = self.process_text(text)
             rating = int(review['stars'])
             self.class_prob[rating-1] += 1
-            for word in text:
+            for word in processed_text:
                 if word not in self.word_prob:
                     self.word_prob[word] = [0, 0, 0, 0, 0]
                 self.word_prob[word][rating-1] += 1
@@ -56,19 +59,25 @@ class NaiveBayes():
     def predict(self, test_filename):
         review_iterator = utils.json_reader(test_filename)
         iter = 0
+        y_pred = []
         for review in review_iterator:
             text = review['text']
             rating = review['stars']
-            print(rating, self.model(text))
+            processed_text = self.process_text(text)
+            pred_prob = self.model(processed_text)
+            y_pred.append(1)
+            print(rating, pred_prob)
             iter += 1
             if iter == 10:
                 break
+        return y_pred
 
 def main(train_filename, test_filname):
     word_prob = Path('pickle_word_prob')
     count_class = Path('pickle_count_class')
+    option = 0
 
-    naive_bayes = NaiveBayes(train_filename, word_prob, count_class)
+    naive_bayes = NaiveBayes(train_filename, option, word_prob, count_class)
     naive_bayes.fit()
 
     print(naive_bayes.word_prob)
