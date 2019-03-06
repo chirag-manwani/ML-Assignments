@@ -16,15 +16,16 @@ def accuracy_score(y, y_pred):
         return correct/num_test
 
 class NaiveBayes():
-    def __init__(self, train_filename, option, pickle_word_prob='', pickle_class_prob='', pickle_prior=''):
+    def __init__(self, train_filename, option, c=1, pickle_word_prob='', pickle_class_prob='', pickle_prior=''):
         self.file_name = train_filename
         self.word_prob = {}
-        self.class_word_count = [1, 1, 1, 1, 1]
-        self.prior = [1, 1, 1, 1, 1]
+        self.class_word_count = [0, 0, 0, 0, 0]
+        self.prior = [0, 0, 0, 0, 0]
         self.process_option = option
         self.pickle_class_prob = pickle_class_prob
         self.pickle_word_prob = pickle_word_prob
         self.pickle_prior = pickle_prior
+        self.c = c
         
     def process_text(self, text, option=0):
         if option == 0:
@@ -49,9 +50,11 @@ class NaiveBayes():
                 self.class_word_count[rating-1] += 1
 
     def calc_word_prob(self):
+        num_unique_words = len(self.word_prob)
         for word in self.word_prob.keys():
             for class_idx in range(5):
-                self.word_prob[word][class_idx] = math.log(self.word_prob[word][class_idx] / self.class_word_count[class_idx])
+                self.word_prob[word][class_idx] = math.log((self.word_prob[word][class_idx] + self.c) / (self.class_word_count[class_idx] + num_unique_words))
+
         num_reviews = sum(self.prior)
         print('Counts', self.prior)
         for class_idx in range(5):
@@ -75,8 +78,9 @@ class NaiveBayes():
 
     def model(self, processed_text):
         num_classes = len(self.class_word_count)
+        num_unique_words = len(self.word_prob)
         prob_class = [0 for _ in range(num_classes)]
-        prob_default = [-math.log(num_classes) for _ in self.class_word_count]
+        prob_default = [-math.log(self.class_word_count[class_idx] + num_unique_words) for class_idx in range(num_classes)]
         for rating in range(num_classes):
             prob_class[rating] += self.prior[rating]
             for word in processed_text:
@@ -132,7 +136,7 @@ def main(train_filename, test_filname):
 
     naive_bayes = NaiveBayes(train_filename, 1, word_prob, class_word_count, prior)
     naive_bayes.fit()
-
+    print('Training complete')
     # y, y_pred = naive_bayes.predict(train_filename)
     # print(accuracy_score(y, y_pred))
 
