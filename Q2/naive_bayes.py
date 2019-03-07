@@ -1,7 +1,8 @@
 import pickle
 import math
-from pathlib import Path
+import random
 import utils
+from pathlib import Path
 
 
 class NaiveBayes():
@@ -11,7 +12,7 @@ class NaiveBayes():
         option,
         c=1,
         pickle_word_prob='',
-        pickle_class_prob='',
+        pickle_class_count='',
         pickle_prior=''
     ):
         self.file_name = train_filename
@@ -19,7 +20,7 @@ class NaiveBayes():
         self.class_word_count = [0, 0, 0, 0, 0]
         self.prior = [0, 0, 0, 0, 0]
         self.process_option = option
-        self.pickle_class_prob = pickle_class_prob
+        self.pickle_class_count = pickle_class_count
         self.pickle_word_prob = pickle_word_prob
         self.pickle_prior = pickle_prior
         self.c = c
@@ -48,7 +49,7 @@ class NaiveBayes():
             self.prior[rating-1] += 1
             for word in processed_text:
                 if word not in self.word_prob:
-                    self.word_prob[word] = [1, 1, 1, 1, 1]
+                    self.word_prob[word] = [0, 0, 0, 0, 0]
                 self.word_prob[word][rating-1] += 1
                 self.class_word_count[rating-1] += 1
 
@@ -60,8 +61,8 @@ class NaiveBayes():
             for class_idx in range(5):
                 self.word_prob[word][class_idx] = math.log(
                         (self.word_prob[word][class_idx] + self.c) /
-                        (self.class_word_count[class_idx] + num_unique_words)
-                    )
+                        (self.class_word_count[class_idx] +
+                            self.c * num_unique_words))
 
         num_reviews = sum(self.prior)
         print('Counts', self.prior)
@@ -72,7 +73,7 @@ class NaiveBayes():
         self
     ):
         word_prob = Path(self.pickle_word_prob)
-        class_word_count = Path(self.pickle_class_prob)
+        class_word_count = Path(self.pickle_class_count)
         prior = Path(self.pickle_prior)
         if (word_prob.is_file() and class_word_count.is_file() and
                 prior.is_file()):
@@ -85,8 +86,7 @@ class NaiveBayes():
             self.calc_word_prob()
             pickle.dump(self.word_prob, open(self.pickle_word_prob, 'wb'))
             pickle.dump(self.class_word_count,
-                        open(self.pickle_class_prob, 'wb')
-                    )
+                        open(self.pickle_class_count, 'wb'))
             pickle.dump(self.prior, open(self.pickle_prior, 'wb'))
 
     def model(
