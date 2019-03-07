@@ -50,7 +50,7 @@ def part_b(train_filename, test_filename):
     print('Random Prediction Accuracy- ', accuracy_score(y, y_pred))
 
     y, y_pred = naive_bayes.predict_majority(test_filename)
-    print('accuracy_score(y, y_pred))
+    print('Majority Prediction Accuracy- ', accuracy_score(y, y_pred))
 
 
 def part_c(train_filename, test_filename):
@@ -90,6 +90,9 @@ def part_d(train_filename, test_filename):
                     )
     naive_bayes.fit()
 
+    y, y_pred = naive_bayes.predict(train_filename)
+    print('Accuracy over Training set- ', accuracy_score(y, y_pred))
+
     y, y_pred = naive_bayes.predict(test_filename)
     print('Accuracy over Testing set- ', accuracy_score(y, y_pred))
 
@@ -111,19 +114,11 @@ def main(
         part_c(train_filename, test_filename)
     elif part == 'd':
         part_d(train_filename, test_filname)
-    elif part == 'e'
+    elif part == 'e':
         part_e(train_filename, test_filname)
     else:
         print('Invalid question part. a-f Valid')
         exit()
-    # cf_mat = confusion_matrix(y, y_pred)
-    # print(cf_mat)
-
-    # y, y_pred = naive_bayes.predict(test_filename)
-    # print(accuracy_score(y, y_pred))
-
-    # cf_mat = confusion_matrix(y, y_pred)
-    # print(cf_mat)
 
 
 if __name__ == '__main__':
