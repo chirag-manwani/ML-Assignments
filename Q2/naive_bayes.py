@@ -99,8 +99,10 @@ class NaiveBayes():
         num_classes = len(self.class_word_count)
         num_unique_words = len(self.word_prob)
         prob_class = [0 for _ in range(num_classes)]
-        prob_default = [-math.log(self.class_word_count[class_idx] +
-                        num_unique_words) for class_idx in range(num_classes)]
+        prob_default = [math.log(self.c) -
+                        math.log(self.class_word_count[class_idx] +
+                        self.c * num_unique_words) 
+                        for class_idx in range(num_classes)]
         for rating in range(num_classes):
             prob_class[rating] += self.prior[rating]
             for word in processed_text:
