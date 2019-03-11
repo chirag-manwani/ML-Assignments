@@ -102,7 +102,26 @@ def part_d(train_filename, test_filename):
 
 
 def part_e(train_filename, test_filename):
-    print('Part-e')
+    word_prob = 'pickle_files/pickle_word_prob_e'
+    class_word_count = 'pickle_files/pickle_class_word_count_e'
+    prior = 'pickle_files/pickle_prior_e'
+
+    naive_bayes = NaiveBayes(
+                        train_filename,
+                        option=1,
+                        c=1,
+                        n_grams=2,
+                        pickle_word_prob=word_prob,
+                        pickle_class_count=class_word_count,
+                        pickle_prior=prior
+                    )
+    naive_bayes.fit()
+
+    y, y_pred = naive_bayes.predict(train_filename)
+    print('Accuracy over Training set- ', accuracy_score(y, y_pred))
+
+    y, y_pred = naive_bayes.predict(test_filename)
+    print('Accuracy over Testing set- ', accuracy_score(y, y_pred))
 
 
 def main(

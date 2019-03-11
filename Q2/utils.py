@@ -68,7 +68,3 @@ def getStemmedDocuments(docs, return_tokens=True):
         return output_docs
     else:
         return _stem(docs, p_stemmer, en_stop, return_tokens)
-
-
-def find_ngrams(input_list, n):
-    return list(zip(*[input_list[i:] for i in range(n)]))

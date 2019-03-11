@@ -2,6 +2,7 @@ import pickle
 import math
 import random
 import utils
+import utilities
 from pathlib import Path
 
 
@@ -39,7 +40,7 @@ class NaiveBayes():
         else:
             print('Invalid Option, returning same output as default option')
             split_text = text.split(' ')
-        return utils.find_ngrams(split_text, self.n_grams)
+        return utilities.find_ngrams(split_text, self.n_grams)
 
     def create_word_count(
         self
