@@ -1,10 +1,10 @@
 import json
-import sys
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-__author__= 'KD'
+__author__ = 'KD'
+
 
 def json_writer(data, fname):
     """
@@ -17,6 +17,7 @@ def json_writer(data, fname):
         for line in data:
             json.dump(line, fp)
             fp.write("\n")
+
 
 def json_reader(fname):
     """
@@ -67,3 +68,7 @@ def getStemmedDocuments(docs, return_tokens=True):
         return output_docs
     else:
         return _stem(docs, p_stemmer, en_stop, return_tokens)
+
+
+def find_ngrams(input_list, n):
+    return list(zip(*[input_list[i:] for i in range(n)]))

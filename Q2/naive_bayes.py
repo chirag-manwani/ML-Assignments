@@ -11,6 +11,7 @@ class NaiveBayes():
         train_filename,
         option,
         c=1,
+        n_grams=1,
         pickle_word_prob='',
         pickle_class_count='',
         pickle_prior=''
@@ -24,19 +25,21 @@ class NaiveBayes():
         self.pickle_word_prob = pickle_word_prob
         self.pickle_prior = pickle_prior
         self.c = c
+        self.n_grams = n_grams
 
     def process_text(
         self,
         text,
-        option=0
     ):
-        if option == 0:
-            return text.split(' ')
-        elif option == 1:
-            return utils.getStemmedDocuments(text)
+        split_text = []
+        if self.process_option == 0:
+            split_text = text.split(' ')
+        elif self.process_option == 1:
+            split_text = utils.getStemmedDocuments(text)
         else:
             print('Invalid Option, returning same output as default option')
-            return text.split(' ')
+            split_text = text.split(' ')
+        return utils.find_ngrams(split_text, self.n_grams)
 
     def create_word_count(
         self
@@ -44,7 +47,7 @@ class NaiveBayes():
         review_iterator = utils.json_reader(self.file_name)
         for review in review_iterator:
             text = review['text']
-            processed_text = self.process_text(text, self.process_option)
+            processed_text = self.process_text(text)
             rating = int(review['stars'])
             self.prior[rating-1] += 1
             for word in processed_text:
@@ -117,7 +120,7 @@ class NaiveBayes():
         for review in review_iterator:
             text = review['text']
             rating = review['stars']
-            processed_text = self.process_text(text, self.process_option)
+            processed_text = self.process_text(text)
             pred = self.model(processed_text)
             y_pred.append(pred)
             y.append(int(rating))

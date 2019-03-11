@@ -16,6 +16,7 @@ def part_a(
                         train_filename,
                         option=0,
                         c=1,
+                        n_grams=1,
                         pickle_word_prob=word_prob,
                         pickle_class_count=class_word_count,
                         pickle_prior=prior
@@ -40,6 +41,7 @@ def part_b(train_filename, test_filename):
                         train_filename,
                         option=0,
                         c=1,
+                        n_grams=1,
                         pickle_word_prob=word_prob,
                         pickle_class_count=class_word_count,
                         pickle_prior=prior
@@ -62,6 +64,7 @@ def part_c(train_filename, test_filename):
                         train_filename,
                         option=0,
                         c=1,
+                        n_grams=1,
                         pickle_word_prob=word_prob,
                         pickle_class_count=class_word_count,
                         pickle_prior=prior
@@ -84,6 +87,7 @@ def part_d(train_filename, test_filename):
                         train_filename,
                         option=1,
                         c=1,
+                        n_grams=1,
                         pickle_word_prob=word_prob,
                         pickle_class_count=class_word_count,
                         pickle_prior=prior
