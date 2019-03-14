@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics.pairwise import euclidean_distances
 from cvxopt import solvers
 from cvxopt import matrix
 
@@ -9,9 +10,13 @@ class SVM():
         self,
         kernel='linear',
         c=0,
-        threshold=1e-8
+        threshold=1e-5,
+        gamma=0.05
     ):
-        self.kernel = kernel
+        if kernel not in ['linear', 'gaussian']:
+            self.kernel = 'linear'
+        else:
+            self.kernel = kernel
         self.c = c
         self.threshold = threshold
         self.alphas = []
@@ -19,12 +24,34 @@ class SVM():
         self.b = []
         self.support_vectors = []
         self.support_vectors_labels = []
+        self.gamma = gamma
+
+    def construct_K(
+        self,
+        X,
+        Y
+    ):
+        if self.kernel == 'linear':
+            return X @ X.T
+        else:
+            K = euclidean_distances(X, Y, squared=True)
+            K = np.exp(-self.gamma * K)
+            return K
 
     def predict(
         self,
         X_test
     ):
-        Y_pred = X_test @ self.w + self.b
+        Y_pred = []
+        if self.kernel == 'linear':
+            Y_pred = X_test @ self.w + self.b
+        else:
+            K = self.construct_K(X_test, self.support_vectors)
+            print(X_test.shape)
+            print(K.shape)
+            Y_pred = (np.ones(X_test.shape[0]) * self.b +
+                      np.sum(self.alphas * self.support_vectors_labels * K,
+                             axis=1))
         condition_list = [Y_pred > 0, Y_pred < 0]
         choice_list = [1, -1]
         Y_pred = np.select(condition_list, choice_list)
@@ -43,7 +70,9 @@ class SVM():
         h_0 = np.zeros(num_samples)
         h_1 = np.ones(num_samples) * self.c
 
-        P = matrix((np.outer(Y, Y) * (X @ X.T)))
+        K = self.construct_K(X, X)
+
+        P = matrix((np.outer(Y, Y) * K))
         q = matrix(-np.ones((num_samples, 1)))
         G = matrix(np.vstack((G_0, G_1)))
         h = matrix(np.hstack((h_0, h_1)))
@@ -61,19 +90,19 @@ class SVM():
         self.support_vectors = X[support_vectors_idx]
         self.support_vectors_labels = Y[support_vectors_idx]
 
-        self.w = np.zeros(self.support_vectors.shape[1])
-        for i in range(self.support_vectors.shape[0]):
-            self.w += (self.alphas[i] * self.support_vectors_labels[i]) \
-                * self.support_vectors[i]
+        if self.kernel == 'linear':
+            self.w = np.zeros(self.support_vectors.shape[1])
+            for i in range(self.support_vectors.shape[0]):
+                self.w += (self.alphas[i] * self.support_vectors_labels[i]) \
+                    * self.support_vectors[i]
 
-        max_prod = -1e6
-        min_prod = 1e6
-        for i in range(self.support_vectors.shape[0]):
-            prod = self.w @ self.support_vectors[i]
-            if self.support_vectors_labels[i] == 1:
-                if prod < min_prod:
-                    min_prod = prod
-            else:
-                if prod > max_prod:
-                    max_prod = prod
-        self.b = -0.5 * (min_prod + max_prod)
+        b = np.zeros(self.support_vectors.shape[0])
+        for sv_idx, idx in zip(support_vectors_idx, range(b.shape[0])):
+            b[idx] = (self.support_vectors_labels[idx] -
+                      np.sum(self.alphas *
+                             self.support_vectors_labels *
+                             K[sv_idx, support_vectors_idx]))
+
+        self.b = np.sum(b)/b.shape[0]
+        print(b)
+        print(self.b)

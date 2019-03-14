@@ -30,7 +30,7 @@ def part_1a(
     data = pandas.read_csv(train_filename, header=None)
     X_train, Y_train = get_data(data, digit)
 
-    svm = SVM(c=1, threshold=1e-6)
+    svm = SVM(c=1, threshold=1e-4)
     svm.fit(X_train, Y_train)
 
     data = pandas.read_csv(test_filename, header=None)
@@ -43,7 +43,17 @@ def part_1a(
 def part_1b(
 
 ):
-    print('part_1b')
+    data = pandas.read_csv(train_filename, header=None)
+    X_train, Y_train = get_data(data, digit)
+
+    svm = SVM(c=1, threshold=1e-4, kernel='gaussian')
+    svm.fit(X_train, Y_train)
+
+    data = pandas.read_csv(test_filename, header=None)
+    X_test, Y_test = get_data(data, digit)
+
+    Y_pred = svm.predict(X_test)
+    print('Accuracy- ', accuracy_score(Y_test, Y_pred))
 
 
 def part_1c(
