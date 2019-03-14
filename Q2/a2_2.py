@@ -1,5 +1,7 @@
 import sys
 import pandas
+from svm import svm_problem, svm_parameter
+from svmutil import svm_train, svm_predict
 from utilities import accuracy_score
 from SVM import SVM
 
@@ -59,9 +61,26 @@ def part_1b(
 
 
 def part_1c(
-
+    train_filename,
+    test_filename,
+    digit,
+    kernel='linear'
 ):
-    print('s')
+    data = pandas.read_csv(train_filename, header=None)
+    X_train, Y_train = get_data(data, digit)
+
+    param_str = '-s 0 -t 2 -c 1'
+    if kernel == 'gaussian':
+        param_str += ' -g 0.05'
+    svm_prb = svm_problem(Y_train, X_train)
+    params = svm_parameter(param_str)
+    svm_model = svm_train(svm_prb, params)
+
+    data = pandas.read_csv(test_filename, header=None)
+    X_test, Y_test = get_data(data, digit)
+
+    labels, acc, vals = svm_predict(Y_test, X_test, svm_model)
+    print('Accuracy-', acc)
 
 
 def part_2a(
@@ -130,5 +149,5 @@ if __name__ == '__main__':
     test_filename = args[2]
     q_num = int(args[3])
     part = args[4]
-    digit = 8
+    digit = 7
     main(train_filename, test_filename, q_num, part, digit)
