@@ -1,21 +1,36 @@
 import sys
 import pandas
-from cvxopt import matrix
+from svm import SVM
 
 
-def read_features(filename):
-    data = pandas.read_csv(filename, header=None)
-    X = matrix(data.iloc[:, :-1].values)
-    Y = matrix(data.iloc[:, -1].values)
-    return X, Y
+def get_train_data(data, digit):
+    positive_label = digit
+    negative_label = (digit+1) % 10
+
+    positive_class = data.loc[data.iloc[:, -1] == positive_label]
+    negative_class = data.loc[data.iloc[:, -1] == negative_label]
+
+    data = positive_class.append(negative_class)
+
+    X = data.iloc[:, :-1]
+    Y = data.iloc[:, -1]
+
+    Y = Y.replace(positive_label, 1)
+    Y = Y.replace(negative_label, -1)
+
+    return X.values, Y.values.astype(float)
 
 
 def part_1a(
     train_filename,
-    test_filename
+    test_filename,
+    digit
 ):
-    X, Y = read_features(train_filename)
-    print('part_1a')
+    data = pandas.read_csv(train_filename, header=None)
+    X_train, Y_train = get_train_data(data, digit)
+    
+    svm = SVM(X_train, Y_train, c=1, threshold=1e-6)
+    svm.fit()
 
 
 def part_1b(
@@ -59,10 +74,11 @@ def main(
     test_filename,
     q_num,
     part,
+    digit
 ):
     if q_num == 0:
         if part == 'a':
-            part_1a()
+            part_1a(train_filename, test_filename, digit)
         elif part == 'b':
             part_1b()
         elif part == 'c':
@@ -93,6 +109,7 @@ if __name__ == '__main__':
 
     train_filename = args[1]
     test_filename = args[2]
-    q_num = args[3]
+    q_num = int(args[3])
     part = args[4]
-    main(train_filename, test_filename, q_num, part)
+    digit = 8
+    main(train_filename, test_filename, q_num, part, digit)
