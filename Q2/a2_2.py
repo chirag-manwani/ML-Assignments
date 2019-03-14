@@ -1,9 +1,10 @@
 import sys
 import pandas
+from utilities import accuracy_score
 from svm import SVM
 
 
-def get_train_data(data, digit):
+def get_data(data, digit):
     positive_label = digit
     negative_label = (digit+1) % 10
 
@@ -18,7 +19,7 @@ def get_train_data(data, digit):
     Y = Y.replace(positive_label, 1)
     Y = Y.replace(negative_label, -1)
 
-    return X.values, Y.values.astype(float)
+    return X.values / 255.0, Y.values.astype(float)
 
 
 def part_1a(
@@ -27,10 +28,16 @@ def part_1a(
     digit
 ):
     data = pandas.read_csv(train_filename, header=None)
-    X_train, Y_train = get_train_data(data, digit)
-    
-    svm = SVM(X_train, Y_train, c=1, threshold=1e-6)
-    svm.fit()
+    X_train, Y_train = get_data(data, digit)
+
+    svm = SVM(c=1, threshold=1e-6)
+    svm.fit(X_train, Y_train)
+
+    data = pandas.read_csv(test_filename, header=None)
+    X_test, Y_test = get_data(data, digit)
+
+    Y_pred = svm.predict(X_test)
+    print('Accuracy- ', accuracy_score(Y_test, Y_pred))
 
 
 def part_1b(
