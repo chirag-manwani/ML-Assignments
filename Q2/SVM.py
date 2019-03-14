@@ -47,8 +47,6 @@ class SVM():
             Y_pred = X_test @ self.w + self.b
         else:
             K = self.construct_K(X_test, self.support_vectors)
-            print(X_test.shape)
-            print(K.shape)
             Y_pred = (np.ones(X_test.shape[0]) * self.b +
                       np.sum(self.alphas * self.support_vectors_labels * K,
                              axis=1))
@@ -104,5 +102,3 @@ class SVM():
                              K[sv_idx, support_vectors_idx]))
 
         self.b = np.sum(b)/b.shape[0]
-        print(b)
-        print(self.b)

@@ -1,7 +1,7 @@
 import sys
 import pandas
 from utilities import accuracy_score
-from svm import SVM
+from SVM import SVM
 
 
 def get_data(data, digit):
@@ -37,11 +37,13 @@ def part_1a(
     X_test, Y_test = get_data(data, digit)
 
     Y_pred = svm.predict(X_test)
-    print('Accuracy- ', accuracy_score(Y_test, Y_pred))
+    print('Accuracy-', accuracy_score(Y_test, Y_pred))
 
 
 def part_1b(
-
+    train_filename,
+    test_filenames,
+    digit
 ):
     data = pandas.read_csv(train_filename, header=None)
     X_train, Y_train = get_data(data, digit)
@@ -53,13 +55,13 @@ def part_1b(
     X_test, Y_test = get_data(data, digit)
 
     Y_pred = svm.predict(X_test)
-    print('Accuracy- ', accuracy_score(Y_test, Y_pred))
+    print('Accuracy-', accuracy_score(Y_test, Y_pred))
 
 
 def part_1c(
 
 ):
-    print('part_1c')
+    print('s')
 
 
 def part_2a(
@@ -97,9 +99,9 @@ def main(
         if part == 'a':
             part_1a(train_filename, test_filename, digit)
         elif part == 'b':
-            part_1b()
+            part_1b(train_filename, test_filename, digit)
         elif part == 'c':
-            part_1c()
+            part_1c(train_filename, test_filename, digit)
         else:
             print('Invalid Part number. a-c valid')
     elif q_num == 1:
