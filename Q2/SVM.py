@@ -43,18 +43,19 @@ class SVM():
         X_test
     ):
         Y_pred = []
+        Y_dist = []
         if self.kernel == 'linear':
-            Y_pred = X_test @ self.w + self.b
+            Y_dist = X_test @ self.w + self.b
         else:
             K = self.construct_K(X_test, self.support_vectors)
-            Y_pred = (np.ones(X_test.shape[0]) * self.b +
+            Y_dist = (np.ones(X_test.shape[0]) * self.b +
                       np.sum(self.alphas * self.support_vectors_labels * K,
                              axis=1))
-        condition_list = [Y_pred > 0, Y_pred < 0]
+        condition_list = [Y_dist > 0, Y_dist < 0]
         choice_list = [1, -1]
         Y_pred = np.select(condition_list, choice_list)
 
-        return Y_pred
+        return Y_pred, Y_dist
 
     def fit(
         self,
