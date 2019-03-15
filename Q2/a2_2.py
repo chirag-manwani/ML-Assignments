@@ -9,6 +9,7 @@ from itertools import combinations
 from utilities import accuracy_score
 from SVM import SVM
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 
 
 def get_data(
@@ -44,7 +45,7 @@ def part_1a(
     data = pandas.read_csv(test_filename, header=None)
     X_test, Y_test = get_data(data, digit, (digit+1) % 10)
 
-    Y_pred = svm.predict(X_test)
+    Y_pred, _ = svm.predict(X_test)
     print('Accuracy-', accuracy_score(Y_test, Y_pred))
 
 
@@ -62,7 +63,7 @@ def part_1b(
     data = pandas.read_csv(test_filename, header=None)
     X_test, Y_test = get_data(data, digit, (digit+1) % 10)
 
-    Y_pred = svm.predict(X_test)
+    Y_pred, _ = svm.predict(X_test)
     print('Accuracy-', accuracy_score(Y_test, Y_pred))
 
 
@@ -75,9 +76,9 @@ def part_1c(
     data = pandas.read_csv(train_filename, header=None)
     X_train, Y_train = get_data(data, digit, (digit+1) % 10)
 
-    param_str = '-s 0 -t 0 -c 1'
+    param_str = '-s 0 -t 0 -c 1 -q'
     if kernel == 'gaussian':
-        param_str = '-s 0 -t 2 -c 1 -g 0.05'
+        param_str = '-s 0 -t 2 -c 1 -g 0.05 -q'
     svm_prb = svm_problem(Y_train, X_train)
     params = svm_parameter(param_str)
     svm_model = svm_train(svm_prb, params)
@@ -160,7 +161,7 @@ def part_2b(
     X_train = data.iloc[:, :-1].values / 255
     Y_train = data.iloc[:, -1].values
 
-    param_str = '-s 0 -t 2 -c 1 -g 0.05'
+    param_str = '-s 0 -t 2 -c 1 -g 0.05 -q'
 
     svm_prb = svm_problem(Y_train, X_train)
     params = svm_parameter(param_str)
@@ -195,7 +196,26 @@ def part_2d(
     train_filename,
     test_filename
 ):
-    print('s')
+    data = pandas.read_csv(train_filename, header=None)
+    X = data.iloc[:, :-1].values / 255
+    Y = data.iloc[:, -1].values
+
+    X_train, X_val, Y_train, Y_val = (
+        train_test_split(X, Y, test_size=0.1, random_state=42))
+
+    c_vals = [1e-5, 1e-3, 1, 5, 10]
+
+    Y_pred_acc = []
+    for c in c_vals:
+        param_str = '-s 0 -t 2 -c ' + str(c) + ' -g 0.05 -q'
+        svm_prb = svm_problem(Y_train, X_train)
+        params = svm_parameter(param_str)
+        svm_model = svm_train(svm_prb, params)
+
+        Y_pred, acc, vals = svm_predict(Y_val, X_val, svm_model)
+        Y_pred_acc.append(acc[1])
+
+    print(Y_pred)
 
 
 def main(
@@ -240,5 +260,5 @@ if __name__ == '__main__':
     test_filename = args[2]
     q_num = int(args[3])
     part = args[4]
-    digit = 0
+    digit = 8
     main(train_filename, test_filename, q_num, part, digit)
