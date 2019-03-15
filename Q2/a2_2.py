@@ -2,6 +2,7 @@ import sys
 import pandas
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 from svm import svm_problem, svm_parameter
 from svmutil import svm_train, svm_predict
@@ -57,7 +58,7 @@ def part_1b(
     data = pandas.read_csv(train_filename, header=None)
     X_train, Y_train = get_data(data, digit, (digit+1) % 10)
 
-    svm = SVM(c=1, threshold=1e-7, kernel='gaussian')
+    svm = SVM(c=1, threshold=1e-4, kernel='gaussian')
     svm.fit(X_train, Y_train)
 
     data = pandas.read_csv(test_filename, header=None)
@@ -203,19 +204,45 @@ def part_2d(
     X_train, X_val, Y_train, Y_val = (
         train_test_split(X, Y, test_size=0.1, random_state=42))
 
+    data = pandas.read_csv(test_filename, header=None)
+    X_test = data.iloc[:, :-1].values / 255
+    Y_test = data.iloc[:, -1].values
+
     c_vals = [1e-5, 1e-3, 1, 5, 10]
 
-    Y_pred_acc = []
+    svm_model = {}
     for c in c_vals:
         param_str = '-s 0 -t 2 -c ' + str(c) + ' -g 0.05 -q'
-        svm_prb = svm_problem(Y_train, X_train)
         params = svm_parameter(param_str)
-        svm_model = svm_train(svm_prb, params)
 
-        Y_pred, acc, vals = svm_predict(Y_val, X_val, svm_model)
-        Y_pred_acc.append(acc[1])
+        svm_prb = svm_problem(Y_train, X_train)
+        svm = svm_train(svm_prb, params)
+        svm_model[c] = svm
 
-    print(Y_pred)
+    print('Validation Accuracies-')
+    val_acc = []
+    for c in c_vals:
+        Y_pred, acc, vals = svm_predict(Y_val, X_val, svm_model[c])
+        val_acc.append(acc[0])
+
+    print('Test Accuracies-')
+    test_acc = []
+    for c in c_vals:
+        Y_pred, acc, vals = svm_predict(Y_test, X_test, svm_model[c])
+        test_acc.append(acc[0])
+
+    plt.figure(figsize=(6, 6))
+
+    ax = plt.gca()
+
+    ax.set_xlabel('log(c)')
+    ax.set_ylabel('Accuracy %')
+
+    ax.plot(np.log(c_vals), val_acc, label='Validation Accuracy')
+    ax.plot(np.log(c_vals), test_acc, label='Test Accuracy')
+
+    ax.legend(loc='upper left')
+    plt.show(block=True)
 
 
 def main(
