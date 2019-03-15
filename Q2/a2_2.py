@@ -102,18 +102,18 @@ def part_2a(
     if svm_models_file.is_file():
         svm_model = pickle.load(open(svm_models_file, 'rb'))
     else:
-        for digits in classfier_idx:
+        for digits in classifier_idx:
             data = pandas.read_csv(train_filename, header=None)
             X_train, Y_train = get_data(data, digits[0], digits[1])
 
             svm = SVM(c=1, threshold=1e-4, kernel='gaussian')
             svm.fit(X_train, Y_train)
             svm_model[digits] = svm
-            print('Done ', digits)
+    print('MultiClass Classfier Model Learnt')
 
     data = pandas.read_csv(test_filename, header=None)
     X_test = data.iloc[:, :-1].values / 255
-    Y_test = data.iloc[-1].values
+    Y_test = data.iloc[:, -1].values
 
     votes = np.zeros((X_test.shape[0], num_classes))
     dist = np.zeros((X_test.shape[0], num_classes))
@@ -125,7 +125,28 @@ def part_2a(
         votes[row_idx_1, digits[0]] += 1
         votes[row_idx_2, digits[1]] += 1
         dist[row_idx_1, digits[0]] += np.abs(Y_dist[row_idx_1])
-        dist[row_idx_1, digits[0]] += np.abs(Y_dist[row_idx_2])
+        dist[row_idx_2, digits[1]] += np.abs(Y_dist[row_idx_2])
+
+    print()
+    # Considering only votes
+    Y_pred = np.argmax(votes, axis=1)
+    print('Accuracy with votes- ', accuracy_score(Y_test, Y_pred))
+
+    # Considering only dist
+    Y_pred = np.argmax(dist, axis=1)
+    print('Accuracy with dist- ', accuracy_score(Y_test, Y_pred))
+
+    # Considering both
+
+    Y_pred = []
+    for votes_t, dist_t in zip(votes, dist):
+        max_votes = np.max(votes_t)
+        final_idx = np.where(votes_t == max_votes)[0]
+        if final_idx.shape[0] != 1:
+            dist_max = np.max(dist_t[final_idx])
+            final_idx = np.where(dist_t == dist_max)[0]
+        Y_pred.append(final_idx[0])
+    print('Accuracy with both- ', accuracy_score(Y_test, Y_pred))
 
 
 def part_2b(
