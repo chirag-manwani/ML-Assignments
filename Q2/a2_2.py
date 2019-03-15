@@ -109,6 +109,7 @@ def part_2a(
             svm = SVM(c=1, threshold=1e-4, kernel='gaussian')
             svm.fit(X_train, Y_train)
             svm_model[digits] = svm
+        pickle.dump(svm_model, open('svm_model', 'wb'))
     print('MultiClass Classfier Model Learnt')
 
     data = pandas.read_csv(test_filename, header=None)
@@ -153,7 +154,22 @@ def part_2b(
     train_filename,
     test_filename
 ):
-    print('a')
+    data = pandas.read_csv(train_filename, header=None)
+    X_train = data.iloc[:, :-1].values / 255
+    Y_train = data.iloc[:, -1].values
+
+    param_str = '-s 0 -t 2 -c 1 -g 0.05'
+
+    svm_prb = svm_problem(Y_train, X_train)
+    params = svm_parameter(param_str)
+    svm_model = svm_train(svm_prb, params)
+
+    data = pandas.read_csv(test_filename, header=None)
+    X_test = data.iloc[:, :-1].values / 255
+    Y_test = data.iloc[:, -1].values
+
+    labels, acc, vals = svm_predict(Y_test, X_test, svm_model)
+    print('Accuracy-', acc)
 
 
 def part_2c(
