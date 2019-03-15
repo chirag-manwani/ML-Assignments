@@ -8,6 +8,7 @@ from svmutil import svm_train, svm_predict
 from itertools import combinations
 from utilities import accuracy_score
 from SVM import SVM
+from sklearn.metrics import confusion_matrix
 
 
 def get_data(
@@ -128,7 +129,6 @@ def part_2a(
         dist[row_idx_1, digits[0]] += np.abs(Y_dist[row_idx_1])
         dist[row_idx_2, digits[1]] += np.abs(Y_dist[row_idx_2])
 
-    print()
     # Considering only votes
     Y_pred = np.argmax(votes, axis=1)
     print('Accuracy with votes- ', accuracy_score(Y_test, Y_pred))
@@ -149,6 +149,8 @@ def part_2a(
         Y_pred.append(final_idx[0])
     print('Accuracy with both- ', accuracy_score(Y_test, Y_pred))
 
+    return Y_test, Y_pred
+
 
 def part_2b(
     train_filename,
@@ -168,20 +170,32 @@ def part_2b(
     X_test = data.iloc[:, :-1].values / 255
     Y_test = data.iloc[:, -1].values
 
-    labels, acc, vals = svm_predict(Y_test, X_test, svm_model)
+    Y_pred, acc, vals = svm_predict(Y_test, X_test, svm_model)
     print('Accuracy-', acc)
+
+    return Y_test, Y_pred
 
 
 def part_2c(
-
+    train_filename,
+    test_filename
 ):
-    print('part_2c')
+    Y_true, Y_pred = part_2a(train_filename, test_filename)
+    print('Confusion Matrix for Multiclass Implementation-')
+    c_mat = confusion_matrix(Y_true, Y_pred)
+    print(c_mat)
+
+    Y_true, Y_pred = part_2b(train_filename, test_filename)
+    print('Confusion Matrix for Multiclass Libsvm-')
+    c_mat = confusion_matrix(Y_true, Y_pred)
+    print(c_mat)
 
 
 def part_2d(
-
+    train_filename,
+    test_filename
 ):
-    print('part_2d')
+    print('s')
 
 
 def main(
