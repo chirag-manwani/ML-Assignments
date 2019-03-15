@@ -243,6 +243,7 @@ def part_2d(
 
     ax.legend(loc='upper left')
     plt.show(block=True)
+    plt.savefig('Plot.jpg')
 
 
 def main(
