@@ -104,4 +104,7 @@ class SVM():
 
         self.b = np.mean(b)
         print('nSV =', b.shape[0])
+        print('b =', self.b)
         np.savetxt('nSV_' + self.kernel, self.support_vectors * 255, fmt='%d')
+        if self.kernel == 'linear':
+            np.savetxt('w' + self.kernel, self.w)

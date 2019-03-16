@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from svm import svm_problem, svm_parameter
-from svmutil import svm_train, svm_predict
+from svmutil import svm_train, svm_predict, svm_save_model
 from itertools import combinations
 from utilities import accuracy_score
 from SVM import SVM
@@ -89,6 +89,7 @@ def part_1c(
 
     labels, acc, vals = svm_predict(Y_test, X_test, svm_model)
     print('Accuracy-', acc)
+    svm_save_model('model_' + kernel, svm_model)
 
 
 def part_2a(
@@ -261,6 +262,9 @@ def main(
         elif part == 'b':
             part_1b(train_filename, test_filename, digit)
         elif part == 'c':
+            print('Linear-')
+            part_1c(train_filename, test_filename, digit, kernel='linear')
+            print('Gaussian')
             part_1c(train_filename, test_filename, digit, kernel='gaussian')
         else:
             print('Invalid Part number. a-c valid')
