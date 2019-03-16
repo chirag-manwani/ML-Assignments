@@ -4,6 +4,7 @@ import random
 import utils
 import utilities
 from pathlib import Path
+from utilities import getLemmatizedDocument
 
 
 class NaiveBayes():
@@ -37,6 +38,8 @@ class NaiveBayes():
             split_text = text.split(' ')
         elif self.process_option == 1:
             split_text = utils.getStemmedDocuments(text)
+        elif self.process_option == 2:
+            split_text = utilities.getLemmatizedDocument(text)
         else:
             print('Invalid Option, returning same output as default option')
             split_text = text.split(' ')

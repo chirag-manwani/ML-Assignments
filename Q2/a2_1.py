@@ -108,7 +108,7 @@ def part_e(train_filename, test_filename):
 
     naive_bayes = NaiveBayes(
                         train_filename,
-                        option=1,
+                        option=2,
                         c=1,
                         n_grams=2,
                         pickle_word_prob=word_prob,
@@ -117,8 +117,31 @@ def part_e(train_filename, test_filename):
                     )
     naive_bayes.fit()
 
-    y, y_pred = naive_bayes.predict(train_filename)
-    print('Accuracy over Training set- ', accuracy_score(y, y_pred))
+    # y, y_pred = naive_bayes.predict(train_filename)
+    # print('Accuracy over Training set- ', accuracy_score(y, y_pred))
+
+    y, y_pred = naive_bayes.predict(test_filename)
+    print('Accuracy over Testing set- ', accuracy_score(y, y_pred))
+
+
+def part_g(train_filename, test_filname):
+    word_prob = 'pickle_files/pickle_word_prob_g'
+    class_word_count = 'pickle_files/pickle_class_word_count_g'
+    prior = 'pickle_files/pickle_prior_g'
+
+    naive_bayes = NaiveBayes(
+                        train_filename,
+                        option=2,
+                        c=1,
+                        n_grams=2,
+                        pickle_word_prob=word_prob,
+                        pickle_class_count=class_word_count,
+                        pickle_prior=prior
+                    )
+    naive_bayes.fit()
+
+    # y, y_pred = naive_bayes.predict(train_filename)
+    # print('Accuracy over Training set- ', accuracy_score(y, y_pred))
 
     y, y_pred = naive_bayes.predict(test_filename)
     print('Accuracy over Testing set- ', accuracy_score(y, y_pred))
@@ -139,6 +162,10 @@ def main(
         part_d(train_filename, test_filname)
     elif part == 'e':
         part_e(train_filename, test_filname)
+    elif part == 'f':
+        part_e(train_filename, test_filname)
+    elif part == 'g':
+        part_g(train_filename, test_filname)
     else:
         print('Invalid question part. a-f Valid')
         exit()
