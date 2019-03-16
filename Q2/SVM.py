@@ -102,4 +102,6 @@ class SVM():
                              self.support_vectors_labels *
                              K[sv_idx, support_vectors_idx]))
 
-        self.b = np.sum(b)/b.shape[0]
+        self.b = np.mean(b)
+        print('nSV =', b.shape[0])
+        np.savetxt('nSV_' + self.kernel, self.support_vectors * 255, fmt='%d')

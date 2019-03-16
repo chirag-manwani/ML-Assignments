@@ -77,9 +77,9 @@ def part_1c(
     data = pandas.read_csv(train_filename, header=None)
     X_train, Y_train = get_data(data, digit, (digit+1) % 10)
 
-    param_str = '-s 0 -t 0 -c 1 -q'
+    param_str = '-s 0 -t 0 -c 1'
     if kernel == 'gaussian':
-        param_str = '-s 0 -t 2 -c 1 -g 0.05 -q'
+        param_str = '-s 0 -t 2 -c 1 -g 0.05'
     svm_prb = svm_problem(Y_train, X_train)
     params = svm_parameter(param_str)
     svm_model = svm_train(svm_prb, params)
@@ -168,12 +168,15 @@ def part_2b(
     params = svm_parameter(param_str)
     svm_model = svm_train(svm_prb, params)
 
+    Y_pred, acc, vals = svm_predict(Y_train, X_train, svm_model)
+    print('Train Accuracy-', acc[0])
+
     data = pandas.read_csv(test_filename, header=None)
     X_test = data.iloc[:, :-1].values / 255
     Y_test = data.iloc[:, -1].values
 
     Y_pred, acc, vals = svm_predict(Y_test, X_test, svm_model)
-    print('Accuracy-', acc)
+    print('Test Accuracy-', acc[0])
 
     return Y_test, Y_pred
 
@@ -243,7 +246,6 @@ def part_2d(
 
     ax.legend(loc='upper left')
     plt.show(block=True)
-    plt.savefig('Plot.jpg')
 
 
 def main(
