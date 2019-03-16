@@ -87,7 +87,7 @@ def part_1c(
     data = pandas.read_csv(test_filename, header=None)
     X_test, Y_test = get_data(data, digit, (digit+1) % 10)
 
-    labels, acc, vals = svm_predict(Y_test, X_test, svm_model)
+    _, acc, _ = svm_predict(Y_test, X_test, svm_model)
     print('Accuracy-', acc)
     svm_save_model('model_' + kernel, svm_model)
 
@@ -169,14 +169,14 @@ def part_2b(
     params = svm_parameter(param_str)
     svm_model = svm_train(svm_prb, params)
 
-    Y_pred, acc, vals = svm_predict(Y_train, X_train, svm_model)
+    Y_pred, acc, _ = svm_predict(Y_train, X_train, svm_model)
     print('Train Accuracy-', acc[0])
 
     data = pandas.read_csv(test_filename, header=None)
     X_test = data.iloc[:, :-1].values / 255
     Y_test = data.iloc[:, -1].values
 
-    Y_pred, acc, vals = svm_predict(Y_test, X_test, svm_model)
+    Y_pred, acc, _ = svm_predict(Y_test, X_test, svm_model)
     print('Test Accuracy-', acc[0])
 
     return Y_test, Y_pred
@@ -226,13 +226,13 @@ def part_2d(
     print('Validation Accuracies-')
     val_acc = []
     for c in c_vals:
-        Y_pred, acc, vals = svm_predict(Y_val, X_val, svm_model[c])
+        _, acc, _ = svm_predict(Y_val, X_val, svm_model[c])
         val_acc.append(acc[0])
 
     print('Test Accuracies-')
     test_acc = []
     for c in c_vals:
-        Y_pred, acc, vals = svm_predict(Y_test, X_test, svm_model[c])
+        _, acc, _ = svm_predict(Y_test, X_test, svm_model[c])
         test_acc.append(acc[0])
 
     plt.figure(figsize=(6, 6))
