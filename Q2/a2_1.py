@@ -1,5 +1,6 @@
 import sys
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 from naive_bayes import NaiveBayes
 from utilities import accuracy_score
 
@@ -120,8 +121,11 @@ def part_e(train_filename, test_filename):
     # y, y_pred = naive_bayes.predict(train_filename)
     # print('Accuracy over Training set- ', accuracy_score(y, y_pred))
 
-    y, y_pred = naive_bayes.predict(test_filename)
-    print('Accuracy over Testing set- ', accuracy_score(y, y_pred))
+    y_true, y_pred = naive_bayes.predict(test_filename)
+    print('Accuracy over Testing set- ', accuracy_score(y_true, y_pred))
+
+    score = f1_score(y_true, y_pred, average='macro')
+    print('F1 Score', score)
 
 
 def part_g(train_filename, test_filname):

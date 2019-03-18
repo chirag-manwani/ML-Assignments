@@ -294,5 +294,5 @@ if __name__ == '__main__':
     test_filename = args[2]
     q_num = int(args[3])
     part = args[4]
-    digit = 8
+    digit = 7
     main(train_filename, test_filename, q_num, part, digit)
