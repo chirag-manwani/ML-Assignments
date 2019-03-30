@@ -9,10 +9,14 @@ def part_a(
     val_filename
 ):
     df = pandas.read_csv(train_filename)
+    df = df.iloc[1:, :].astype(float)
     cols_to_binarize = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17'
                         , 'X18', 'X19', 'X20', 'X21', 'X22', 'X23']
+    
     df = utils.binarize_median(df, cols_to_binarize)
-
+    print(df.columns)
+    X_train = df.drop('Y', axis=1)
+    Y_train = df['Y']
 
 def main(
     train_filename,
@@ -48,5 +52,5 @@ if __name__ == '__main__':
     train_filename = args[1]
     test_filename = args[2]
     val_filename = args[3]
-    part = args[3]
+    part = args[4]
     main(train_filename, test_filename, val_filename, part)

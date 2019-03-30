@@ -9,4 +9,7 @@ def binarize_median(
     Output-
         p_df- processed dataframe
     '''
+    for col in columns:
+        median = df[col].median()
+        df[col] = (df[col] >= median).astype(int)
     return df
