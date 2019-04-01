@@ -1,15 +1,43 @@
+import numpy as np
+import math
+
 def binarize_median(
     df,
     columns
 ):
-    '''
-    Input- 
-        df- dataframe
-        columns- columns to binarize
-    Output-
-        p_df- processed dataframe
-    '''
     for col in columns:
         median = df[col].median()
         df[col] = (df[col] >= median).astype(int)
     return df
+
+
+def entropy(
+        labels
+    ):
+        n_labels = len(labels)
+
+        if n_labels <= 1:
+            return 0
+
+        _, counts = np.unique(labels, return_counts=True)
+        label_prob = counts / n_labels
+        n_classes = np.count_nonzero(label_prob)
+
+        if n_classes <= 1:
+            return 0
+
+        entropy = 0
+        for prob in label_prob:
+            entropy -= prob * math.log(prob, 2)
+
+        return entropy
+
+
+def partition(
+    rule,
+    data
+):
+    # true_rows = data.loc[data[rule.col] == rule.value]
+    # true_rows = df()
+    # for 
+    return true_rows, false_rows

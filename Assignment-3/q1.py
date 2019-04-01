@@ -1,22 +1,25 @@
 import sys
 import pandas
 import utils
-
+from DTree import DTree
 
 def part_a(
     train_filename,
     test_filename,
     val_filename
 ):
-    df = pandas.read_csv(train_filename)
-    df = df.iloc[1:, :].astype(float)
-    cols_to_binarize = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17'
+    df = pandas.read_csv(train_filename, skiprows=[1])
+    df = df.iloc[:, 1:]
+    cont_cols = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17'
                         , 'X18', 'X19', 'X20', 'X21', 'X22', 'X23']
     
-    df = utils.binarize_median(df, cols_to_binarize)
-    print(df.columns)
+    df = utils.binarize_median(df, cont_cols)
+    # print(df) 
     X_train = df.drop('Y', axis=1)
     Y_train = df['Y']
+
+    d_tree = DTree([])
+    d_tree.fit(X_train, Y_train)
 
 def main(
     train_filename,
