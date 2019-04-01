@@ -1,7 +1,9 @@
 import sys
 import pandas
 import utils
+from sklearn.metrics import accuracy_score
 from DTree import DTree
+
 
 def part_a(
     train_filename,
@@ -10,16 +12,19 @@ def part_a(
 ):
     df = pandas.read_csv(train_filename, skiprows=[1])
     df = df.iloc[:, 1:]
-    cont_cols = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17'
-                        , 'X18', 'X19', 'X20', 'X21', 'X22', 'X23']
-    
+    cont_cols = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17',
+                 'X18', 'X19', 'X20', 'X21', 'X22', 'X23']
+
     df = utils.binarize_median(df, cont_cols)
-    # print(df) 
+    # print(df)
     X_train = df.drop('Y', axis=1)
     Y_train = df['Y']
 
     d_tree = DTree([])
     d_tree.fit(X_train, Y_train)
+    Y_pred = d_tree.predict(X_train)
+    print(accuracy_score(Y_train, Y_pred))
+
 
 def main(
     train_filename,
