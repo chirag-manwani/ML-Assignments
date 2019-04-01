@@ -1,5 +1,7 @@
 import math
 import utils
+import pickle
+from pathlib import Path
 
 
 class DTree:
@@ -75,8 +77,13 @@ class DTree:
         X_train,
         Y_train
     ):
-        data = X_train.join(Y_train)
-        self.root = self.build_tree(data, 0)
+        pickle_file = Path('pickle_a')
+        if pickle_file.is_file():
+            self.root = pickle.load(open(pickle_file, 'rb'))
+        else:
+            data = X_train.join(Y_train)
+            self.root = self.build_tree(data, 0)
+            pickle.dump(self.root, open(pickle_file, 'wb'))
 
     def predict(
         self,
