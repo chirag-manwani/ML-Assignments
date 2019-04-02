@@ -3,6 +3,7 @@ import pandas
 import utils
 import pickle
 from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier
 from pathlib import Path
 from DTree import DTree
 
@@ -97,6 +98,53 @@ def part_c(
     print(accuracy_score(Y_val, Y_pred))
 
 
+def part_d(
+    train_filename,
+    test_filename,
+    val_filename
+):
+    df_train = pandas.read_csv(train_filename, skiprows=[1])
+    df_train = df_train.iloc[:, 1:]
+
+    df_test = pandas.read_csv(test_filename, skiprows=[1])
+    df_test = df_test.iloc[:, 1:]
+
+    df_val = pandas.read_csv(val_filename, skiprows=[1])
+    df_val = df_val.iloc[:, 1:]
+
+    cont_cols = ['X1', 'X5', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17',
+                 'X18', 'X19', 'X20', 'X21', 'X22', 'X23']
+
+    # df_train = utils.binarize_median(df_train, cont_cols)
+    # df_test = utils.binarize_median(df_test, cont_cols)
+    # df_val = utils.binarize_median(df_val, cont_cols)
+
+    X_train = df_train.drop('Y', axis=1).values
+    Y_train = df_train['Y'].values
+
+    X_test = df_test.drop('Y', axis=1).values
+    Y_test = df_test['Y'].values
+
+    X_val = df_val.drop('Y', axis=1).values
+    Y_val = df_val['Y'].values
+
+    d_tree = DecisionTreeClassifier(
+        criterion='entropy',
+        min_samples_leaf=1,
+        min_samples_split=2,
+        max_depth=None)
+    d_tree.fit(X_train, Y_train)
+
+    Y_pred = d_tree.predict(X_train)
+    print(accuracy_score(Y_train, Y_pred))
+
+    Y_pred = d_tree.predict(X_test)
+    print(accuracy_score(Y_test, Y_pred))
+
+    Y_pred = d_tree.predict(X_val)
+    print(accuracy_score(Y_val, Y_pred))
+
+
 def main(
     train_filename,
     test_filname,
@@ -109,8 +157,8 @@ def main(
     #     part_b(train_filename, test_filename)
     elif part == 'c':
         part_c(train_filename, test_filename, val_filename)
-    # elif part == 'd':
-    #     part_d(train_filename, test_filname)
+    elif part == 'd':
+        part_d(train_filename, test_filname, val_filename)
     # elif part == 'e':
     #     part_e(train_filename, test_filname)
     # elif part == 'f':

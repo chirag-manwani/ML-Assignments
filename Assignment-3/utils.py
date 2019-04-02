@@ -13,7 +13,7 @@ def binarize_median(
 
 
 def entropy(
-        labels
+    labels
 ):
     n_labels = len(labels)
 
