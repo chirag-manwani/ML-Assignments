@@ -36,8 +36,17 @@ class DTree:
             weighted_entropy = 0
             rules = []
             if col in self.cont_cols:
-                # TODO: Code for continuous attributes
-                print('cont')
+                median = data[col].median()
+                rules.append(Rule(col, median, is_cat=False))
+
+                true_rows = data.loc[data[col] >= median]
+                false_rows = data.loc[data[col] < median]
+
+                weighted_entropy += (
+                        (true_rows.shape[0] / data.shape[0] *
+                         utils.entropy(true_rows.iloc[:, -1])) +
+                        (false_rows.shape[0] / data.shape[0] *
+                         utils.entropy(false_rows.iloc[:, -1])))
             else:
                 unique_vals = data[col].unique()
                 for val in unique_vals:
@@ -64,7 +73,7 @@ class DTree:
         majority_class = data.iloc[:, -1].value_counts().idxmax()
         if (gain < self.gain_th or
            (majority_class / data.shape[0]) > self.purity_th):
-            return Node(majority=majority_class, is_leaf=True)
+            return Node(majority=majority_class, is_leaf=True, depth=depth)
 
         children = []
         if max_col in self.cont_cols:
@@ -75,7 +84,7 @@ class DTree:
                 val = rule.value
                 children.append(self.build_tree(data.loc[data[max_col] == val],
                                                 depth+1))
-        return Node(children, rules, majority_class, False)
+        return Node(children, rules, majority_class, False, depth=depth)
 
     def fit(
         self,
@@ -133,12 +142,14 @@ class Node:
         children=[],
         rules=[],
         majority=None,
-        is_leaf=False
+        is_leaf=False,
+        depth=0
     ):
         self.children = children
         self.rules = rules
         self.majority = majority
-        self.is_leaf=is_leaf
+        self.is_leaf = is_leaf
+        self.depth = depth
 
 
 class Rule():

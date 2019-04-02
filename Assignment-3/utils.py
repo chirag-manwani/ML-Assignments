@@ -32,13 +32,3 @@ def entropy(
         entropy -= prob * math.log(prob, 2)
 
     return entropy
-
-
-def partition(
-    rule,
-    data
-):
-    # true_rows = data.loc[data[rule.col] == rule.value]
-    # true_rows = df()
-    # for 
-    return true_rows, false_rows
