@@ -8,11 +8,15 @@ class DTree:
 
     def __init__(
         self,
-        cont_cols
+        cont_cols,
+        gain_threshold=1e-3,
+        purity_threshold=0.95
     ):
         self.attr_split_count = {}
         self.cont_cols = set(cont_cols)
         self.root = None
+        self.gain_th = gain_threshold
+        self.purity_th = purity_threshold
 
     def best_split(
         self,
@@ -42,7 +46,7 @@ class DTree:
                     weighted_entropy += ((true_rows.shape[0] / data.shape[0]) *
                                          utils.entropy(true_rows.iloc[:, -1]))
             gain = init_entropy - weighted_entropy
-            if gain > max_gain and math.fabs(gain) > 1e-3:
+            if gain > max_gain and math.fabs(gain) > self.gain_th:
                 max_gain = gain
                 max_rules = rules
                 max_col = col
@@ -58,7 +62,8 @@ class DTree:
         gain, rules, max_col = self.best_split(data)
 
         majority_class = data.iloc[:, -1].value_counts().idxmax()
-        if gain < 1e-3 or majority_class / data.shape[0] > 0.95:
+        if (gain < self.gain_th or
+           (majority_class / data.shape[0]) > self.purity_th):
             return Node(majority=majority_class, is_leaf=True)
 
         children = []
