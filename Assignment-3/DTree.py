@@ -1,7 +1,5 @@
 import math
 import utils
-import pickle
-from pathlib import Path
 
 
 class DTree:
@@ -69,35 +67,41 @@ class DTree:
     ):
         # Loop over all possible values of feature to create subtrees
         gain, rules, max_col = self.best_split(data)
+        num_nodes = 0
 
         majority_class = data.iloc[:, -1].value_counts().idxmax()
         if (gain < self.gain_th or
            (majority_class / data.shape[0]) > self.purity_th):
-            return Node(majority=majority_class, is_leaf=True, depth=depth)
+            return Node(majority=majority_class, is_leaf=True, depth=depth,
+                        num_nodes=num_nodes)
 
         children = []
         if max_col in self.cont_cols:
-            # TODO: Code for continuous attributes
-            print('cont')
+            median = rules[0].value
+
+            true_node = self.build_tree(data.loc[data[max_col] >= median],
+                                        depth+1)
+            false_node = self.build_tree(data.loc[data[max_col] < median],
+                                         depth+1)
+
+            children = [false_node, true_node]
         else:
             for rule in rules:
                 val = rule.value
-                children.append(self.build_tree(data.loc[data[max_col] == val],
-                                                depth+1))
-        return Node(children, rules, majority_class, False, depth=depth)
+                child_node = self.build_tree(data.loc[data[max_col] == val],
+                                             depth+1)
+                num_nodes += (child_node.num_nodes + 1)
+                children.append(child_node)
+        return Node(children, rules, majority_class, False, depth=depth,
+                    num_nodes=num_nodes)
 
     def fit(
         self,
         X_train,
         Y_train
     ):
-        pickle_file = Path('pickle_a')
-        if pickle_file.is_file():
-            self.root = pickle.load(open(pickle_file, 'rb'))
-        else:
-            data = X_train.join(Y_train)
-            self.root = self.build_tree(data, 0)
-            pickle.dump(self.root, open(pickle_file, 'wb'))
+        data = X_train.join(Y_train)
+        self.root = self.build_tree(data, 0)
 
     def predict(
         self,
@@ -126,9 +130,12 @@ class DTree:
                         can_go_further = True
                         continue
             else:
-                # TODO
-                print('continuous')
-
+                median = curr_node.rules[0].value
+                if getattr(x, curr_col) < median:
+                    curr_node = curr_node.children[0]
+                else:
+                    curr_node = curr_node.children[1]
+                can_go_further = True
             if not can_go_further:
                 classified = True
 
@@ -143,13 +150,15 @@ class Node:
         rules=[],
         majority=None,
         is_leaf=False,
-        depth=0
+        depth=0,
+        num_nodes=0
     ):
         self.children = children
         self.rules = rules
         self.majority = majority
         self.is_leaf = is_leaf
         self.depth = depth
+        self.num_nodes = num_nodes
 
 
 class Rule():
