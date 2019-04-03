@@ -32,3 +32,25 @@ def entropy(
         entropy -= prob * math.log(prob, 2)
 
     return entropy
+
+
+def one_hot_encoder(
+    X,
+    cols_to_encode,
+    col_values
+):
+    cols_to_leave = list(set(range(X.shape[1])) - set(cols_to_encode))
+    X_processed = X[:, cols_to_leave]
+    num_rows = X.shape[0]
+    for col, values in zip(cols_to_encode, col_values):
+        val_to_int = {val: idx for idx, val in enumerate(values)}
+        X_new_cols = np.zeros((num_rows, len(values)))
+        for row in range(num_rows):
+            value = X[row, col]
+            X_new_cols[row, val_to_int[value]] = 1
+        X_processed = np.hstack((X_processed, X_new_cols))
+    return X_processed
+
+
+def sigmoid(z):
+    return 1/(1+np.exp(-z))
