@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+from sklearn.metrics import accuracy_score
 
 
 class NN:
@@ -27,18 +28,34 @@ class NN:
             i_size = o_size
         self.layers[-1].activation_function = 'sigmoid'
 
+    def predict(
+        self,
+        X
+    ):
+        self.forward_pass(X)
+        outputs = self.layers[-1].activations
+        Y_pred = np.argmax(outputs, axis=0)
+        return Y_pred
+
     def fit(
         self,
         X_train,
         Y_train,
         batch_size=100,
-        lr=0.1
+        lr=0.1,
+        epochs=100
     ):
         self.lr = lr
-        for i in range(10):
-            self.forward_pass(X_train)
-            self.backward_pass(X_train, Y_train)
-            self.error(X_train)
+        total_samples = X_train.shape[0]
+        for i in range(epochs):
+            idx = 0
+            while idx+batch_size < total_samples:
+                batch_x = X_train[idx:idx+batch_size]
+                batch_y = Y_train[idx:idx+batch_size]
+                self.forward_pass(batch_x)
+                self.backward_pass(batch_x, batch_y)
+                idx += batch_size
+            self.error(X_train, Y_train)
 
     def forward_pass(
         self,
@@ -74,7 +91,8 @@ class NN:
         bias = np.ones((1, self.layers[-2].activations.shape[1]))
         X = np.vstack((self.layers[-2].activations, bias)).T
 
-        new_weights = self.layers[-1].weights - self.lr * (delta_k @ X)
+        new_weights = self.layers[-1].weights - \
+            self.lr * ((delta_k @ X)/X.shape[0])
         for l_num in reversed(range(1, len(self.layers)-1)):
             activations = self.layers[l_num].activations
 
@@ -86,15 +104,20 @@ class NN:
             X = np.vstack((self.layers[l_num-1].activations, bias)).T
 
             self.layers[l_num+1].weights = new_weights
-            new_weights = self.layers[l_num].weights - self.lr * (delta_k @ X)
+            new_weights = self.layers[l_num].weights - \
+                self.lr * ((delta_k @ X)/X.shape[0])
         self.layers[1].weights = new_weights
 
     def error(
         self,
-        Xtrain
+        X,
+        Y
     ):
-        outputs = self.layers[-1].activations
-        print(outputs.shape)        
+        Y_pred = self.predict(X)
+        Y_true = np.argmax(Y, axis=1)
+
+        print(accuracy_score(Y_true, Y_pred))
+
 
 class Layer:
 
