@@ -52,8 +52,13 @@ def one_hot_encoder(
     return X_processed
 
 
+def sig(x):
+    return 1-(1/(1+math.exp(x))) if x < 0 else 1/(1+math.exp(-x))
+
+
 def sigmoid(z):
-    return 1/(1+np.exp(-z))
+    vec_sig = np.vectorize(sig)
+    return vec_sig(z)
 
 
 def relu(z):
