@@ -1,6 +1,7 @@
 import numpy as np
 import utils
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
 
 
 class NN:
@@ -43,7 +44,8 @@ class NN:
         Y_train,
         batch_size=100,
         lr=0.1,
-        epochs=100
+        epochs=100,
+        adaptive=False
     ):
         self.lr = lr
         total_samples = X_train.shape[0]
@@ -53,9 +55,10 @@ class NN:
                 batch_x = X_train[idx:idx+batch_size]
                 batch_y = Y_train[idx:idx+batch_size]
                 self.forward_pass(batch_x)
-                self.backward_pass(batch_x, batch_y)
+                self.backward_pass(batch_y)
                 idx += batch_size
-            self.error(X_train, Y_train)
+            if i % 5 == 0:
+                self.error(X_train, Y_train)
 
     def forward_pass(
         self,
@@ -73,13 +76,12 @@ class NN:
                 self.layers[l_num].activations = utils.sigmoid(net)
             else:
                 self.layers[l_num].activations = utils.relu(net)
-            input = self.layers[l_num].activations
 
     def backward_pass(
         self,
-        X,
         Y
     ):
+        batch_size = Y.shape[0]
         activations = self.layers[-1].activations
 
         # Last layer activation is always sigmoid
@@ -89,23 +91,24 @@ class NN:
         delta_k = diff * gradient
 
         bias = np.ones((1, self.layers[-2].activations.shape[1]))
-        X = np.vstack((self.layers[-2].activations, bias)).T
+        X = np.vstack((bias, self.layers[-2].activations)).T
 
-        new_weights = self.layers[-1].weights - \
-            self.lr * ((delta_k @ X)/X.shape[0])
+        new_weights = self.layers[-1].weights + self.lr * \
+            (delta_k @ X) / batch_size
         for l_num in reversed(range(1, len(self.layers)-1)):
             activations = self.layers[l_num].activations
 
             gradient = activations * (1 - activations)
+            self.layers[l_num+1].weights = new_weights
             delta_k = (gradient *
-                       (self.layers[l_num+1].weights[:, :-1].T @ delta_k))
+                       (self.layers[l_num+1].weights[:, 1:].T @ delta_k))
 
             bias = np.ones((1, self.layers[l_num-1].activations.shape[1]))
-            X = np.vstack((self.layers[l_num-1].activations, bias)).T
+            X = np.vstack((bias, self.layers[l_num-1].activations)).T
 
-            self.layers[l_num+1].weights = new_weights
-            new_weights = self.layers[l_num].weights - \
-                self.lr * ((delta_k @ X)/X.shape[0])
+            # self.layers[l_num+1].weights = new_weights
+            new_weights = self.layers[l_num].weights + self.lr * \
+                (delta_k @ X) / batch_size
         self.layers[1].weights = new_weights
 
     def error(
@@ -115,7 +118,7 @@ class NN:
     ):
         Y_pred = self.predict(X)
         Y_true = np.argmax(Y, axis=1)
-
+        print(confusion_matrix(Y_true, Y_pred))
         print(accuracy_score(Y_true, Y_pred))
 
 
@@ -127,6 +130,7 @@ class Layer:
         nI,
         activation_function='sigmoid'
     ):
-        self.weights = np.random.normal(size=(num_units, nI+1))
+        # self.weights = np.random.normal(size=(num_units, nI+1), scale=0.5)
+        self.weights = np.random.uniform(low=-0.5, high=0.5, size=(num_units, nI+1))
         self.activations = np.zeros(num_units)
         self.activation_function = activation_function
