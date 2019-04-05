@@ -64,3 +64,19 @@ def sigmoid(z):
 def relu(z):
     z[z < 0] = 0
     return z
+
+
+def read_config(
+    config_filename
+):
+    config = open(config_filename, 'r')
+    lines = config.read().split('\n')
+    nI = int(lines[0])
+    nO = int(lines[1])
+    batch_size = int(lines[2])
+    arch_list = [int(x) for x in lines[4].split()]
+    activation = lines[5]
+    lr_type = lines[6]
+    config.close()
+
+    return nI, nO, batch_size, arch_list, activation, lr_type

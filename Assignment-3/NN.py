@@ -45,7 +45,7 @@ class NN:
         batch_size=100,
         lr=0.1,
         epochs=100,
-        adaptive=False
+        adaptive='fixed'
     ):
         self.lr = lr
         total_samples = X_train.shape[0]

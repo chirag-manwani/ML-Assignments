@@ -2,7 +2,6 @@ import sys
 import pandas
 import utils
 import numpy as np
-import pickle
 from NN import NN
 
 
@@ -22,6 +21,7 @@ def part_a(
                   [1, 2, 3, 4], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                   [1, 2, 3, 4], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                   [1, 2, 3, 4], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]]
+
     X_train = utils.one_hot_encoder(X_train, cols_to_encode, col_values)
     Y_train = utils.one_hot_encoder(np.reshape(Y_train, (Y_train.shape[0], 1)),
                                     [0], [range(10)])
@@ -47,8 +47,14 @@ def part_b(
     train_filename,
     test_filename
 ):
-    nn = NN(85, 10, [5])
-    nn.fit(X_train, Y_train, lr=1, epochs=500, batch_size=100)
+    nI, nO, batch_size, arch_list, activation, lr_type \
+        = utils.read_config(config_file)
+    data = pandas.read_csv(train_filename, header=None)
+    X_train = data.iloc[:, :85].values
+    Y_train = data.iloc[:, 85:].values
+    nn = NN(nI, nO, arch_list, activation_function=activation)
+    nn.fit(X_train, Y_train, lr=1, epochs=500,
+           batch_size=batch_size, adaptive=lr_type)
 
 
 def part_c(
@@ -72,7 +78,7 @@ def main(
     if part == 'a':
         part_a(args[0], args[1], args[2], args[3])
     elif part == 'b':
-        part_b(args[0], test_filename)
+        part_b(args[0], args[1], args[2])
     elif part == 'c':
         part_c(args[0], test_filename)
     elif part == 'd':
