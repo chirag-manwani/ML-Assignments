@@ -2,12 +2,79 @@ import sys
 import pandas
 import utils
 import pickle
+import matplotlib.pyplot as plt
+import queue
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from pathlib import Path
 
 from DTree import DTree
+
+
+def traverse_tree(
+    root
+):
+    q = queue.Queue()
+    q.put(root)
+
+    node_list = []
+    while not q.empty():
+        curr_node = q.get()
+        for child in curr_node.children:
+            if not curr_node.is_leaf:
+                q.put(child)
+        node_list.append(curr_node)
+
+    return node_list
+
+
+def plot_accuracies(
+    d_tree,
+    data,
+    gap=1
+):
+    (X_train, X_test, X_val, Y_train, Y_test, Y_val,
+        prev_train, prev_test, prev_val) = data
+
+    node_list = traverse_tree(d_tree.root)
+    num_nodes = len(node_list)
+    print('Total number of nodes in tree', num_nodes)
+
+    train_acc_hist = [prev_train]
+    test_acc_hist = [prev_test]
+    val_acc_hist = [prev_val]
+    X = [num_nodes]
+
+    idx = 0
+    node_list.reverse()
+    while idx + gap < num_nodes:
+        for i in range(idx, idx+gap):
+            node_list[i].is_leaf = True
+        Y_pred = d_tree.predict(X_train)
+        train_acc_hist.append(accuracy_score(Y_train, Y_pred))
+
+        Y_pred = d_tree.predict(X_test)
+        test_acc_hist.append(accuracy_score(Y_test, Y_pred))
+
+        Y_pred = d_tree.predict(X_val)
+        val_acc_hist.append(accuracy_score(Y_val, Y_pred))
+
+        idx += gap
+        X.append(num_nodes - idx)
+
+    ax = plt.gca()
+
+    ax.plot(X, train_acc_hist, label='Train Accuracy')
+    ax.plot(X, test_acc_hist, label='Test Accuracy')
+    ax.plot(X, val_acc_hist, label='Validation Accuracy')
+
+    ax.set_xlabel('Number of nodes')
+    ax.set_ylabel('Prediction Accuracy')
+
+    # plt.xlim(num_nodes, 0)
+    ax.legend()
+    plt.show()
 
 
 def part_a(
@@ -48,13 +115,20 @@ def part_a(
         pickle.dump(d_tree, open(pickle_file, 'wb'))
 
     Y_pred = d_tree.predict(X_train)
-    print(accuracy_score(Y_train, Y_pred))
+    init_train = accuracy_score(Y_train, Y_pred)
+    print(init_train)
 
     Y_pred = d_tree.predict(X_test)
-    print(accuracy_score(Y_test, Y_pred))
+    init_test = accuracy_score(Y_test, Y_pred)
+    print(init_test)
 
     Y_pred = d_tree.predict(X_val)
-    print(accuracy_score(Y_val, Y_pred))
+    init_val = accuracy_score(Y_val, Y_pred)
+    print(init_val)
+
+    data = (X_train, X_test, X_val, Y_train, Y_test, Y_val,
+            init_train, init_test, init_val)
+    plot_accuracies(d_tree, data, gap=200)
 
 
 def part_c(
@@ -91,13 +165,20 @@ def part_c(
         pickle.dump(d_tree, open(pickle_file, 'wb'))
 
     Y_pred = d_tree.predict(X_train)
-    print(accuracy_score(Y_train, Y_pred))
+    init_train = accuracy_score(Y_train, Y_pred)
+    print(init_train)
 
     Y_pred = d_tree.predict(X_test)
-    print(accuracy_score(Y_test, Y_pred))
+    init_test = accuracy_score(Y_test, Y_pred)
+    print(init_test)
 
     Y_pred = d_tree.predict(X_val)
-    print(accuracy_score(Y_val, Y_pred))
+    init_val = accuracy_score(Y_val, Y_pred)
+    print(init_val)
+
+    data = (X_train, X_test, X_val, Y_train, Y_test, Y_val,
+            init_train, init_test, init_val)
+    plot_accuracies(d_tree, data, gap=200)
 
 
 def part_d(
