@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+import math
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 
@@ -34,8 +35,8 @@ class NN:
         X
     ):
         self.forward_pass(X)
-        outputs = self.layers[-1].activations
-        Y_pred = np.argmax(outputs, axis=0)
+        Y_pred = self.layers[-1].activations
+        Y_pred = np.argmax(Y_pred, axis=0)
         return Y_pred
 
     def fit(
@@ -44,11 +45,18 @@ class NN:
         Y_train,
         batch_size=100,
         lr=0.1,
-        epochs=100,
-        adaptive='fixed'
+        epochs=1000,
+        adaptive='fixed',
+        tol=1e-4
     ):
         self.lr = lr
+        is_adaptive = False
+        if adaptive == 'variable':
+            is_adaptive = True
+
         total_samples = X_train.shape[0]
+        loss_hist = []
+
         for i in range(epochs):
             idx = 0
             while idx+batch_size < total_samples:
@@ -57,8 +65,22 @@ class NN:
                 self.forward_pass(batch_x)
                 self.backward_pass(batch_y)
                 idx += batch_size
-            if i % 5 == 0:
-                self.error(X_train, Y_train)
+
+            accuracy = self.error(X_train, Y_train)
+
+            Y_pred = self.layers[-1].activations.T
+            loss = self.loss(Y_train, Y_pred)
+
+            loss_hist.append(loss)
+            print('Epoch:', i)
+            print('Accuracy Score:', accuracy,
+                  'Loss:', loss)
+            if (is_adaptive and
+                    i > 2 and
+                    math.fabs(loss_hist[-2] - loss_hist[-1]) < tol and
+                    math.fabs(loss_hist[-2] - loss_hist[-1]) < tol):
+                print('Learning Rate adjusted')
+                self.lr /= 5
 
     def forward_pass(
         self,
@@ -114,12 +136,23 @@ class NN:
     def error(
         self,
         X,
-        Y
+        Y_true
     ):
-        Y_pred = self.predict(X)
-        Y_true = np.argmax(Y, axis=1)
-        print(confusion_matrix(Y_true, Y_pred))
-        print(accuracy_score(Y_true, Y_pred))
+        Y_true_labels = np.argmax(Y_true, axis=1)
+        Y_pred_labels = self.predict(X)
+
+        # print(confusion_matrix(Y_true, Y_pred))
+        accuracy = accuracy_score(Y_true_labels, Y_pred_labels)
+        return accuracy
+
+    def loss(
+        self,
+        Y_true,
+        Y_pred
+    ):
+        norm = np.linalg.norm(Y_true - Y_pred, ord='fro')
+        norm = norm ** 2
+        return norm / 2
 
 
 class Layer:
@@ -131,6 +164,7 @@ class Layer:
         activation_function='sigmoid'
     ):
         # self.weights = np.random.normal(size=(num_units, nI+1), scale=0.5)
-        self.weights = np.random.uniform(low=-0.5, high=0.5, size=(num_units, nI+1))
+        self.weights = np.random.uniform(low=-0.5, high=0.5,
+                                         size=(num_units, nI+1))
         self.activations = np.zeros(num_units)
         self.activation_function = activation_function
