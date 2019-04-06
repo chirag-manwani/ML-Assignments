@@ -47,7 +47,8 @@ class NN:
         lr=0.1,
         epochs=1000,
         adaptive='fixed',
-        tol=1e-4
+        tol=1e-4,
+        prints=False
     ):
         self.lr = lr
         is_adaptive = False
@@ -72,14 +73,15 @@ class NN:
             loss = self.loss(Y_train, Y_pred)
 
             loss_hist.append(loss)
-            print('Epoch:', i)
-            print('Accuracy Score:', accuracy,
-                  'Loss:', loss)
+            if prints:
+                print('Epoch:', i)
+                print('Accuracy Score:', accuracy,
+                      'Loss:', loss)
             if (is_adaptive and
-                    i > 2 and
+                    i > 150 and
                     math.fabs(loss_hist[-2] - loss_hist[-1]) < tol and
                     math.fabs(loss_hist[-2] - loss_hist[-1]) < tol):
-                print('Learning Rate adjusted')
+                print('Learning Rate adjusted\n\n\n')
                 self.lr /= 5
 
     def forward_pass(
@@ -152,7 +154,7 @@ class NN:
     ):
         norm = np.linalg.norm(Y_true - Y_pred, ord='fro')
         norm = norm ** 2
-        return norm / 2
+        return norm / (2 * Y_true.shape[0])
 
 
 class Layer:
