@@ -28,6 +28,7 @@ class NN:
             n_layer = Layer(o_size, i_size, activation_function)
             self.layers.append(n_layer)
             i_size = o_size
+            print(self.layers[-1].weights.shape)
         self.layers[-1].activation_function = 'sigmoid'
 
     def predict(
@@ -47,7 +48,7 @@ class NN:
         lr=0.1,
         epochs=1000,
         adaptive='fixed',
-        tol=1e-5,
+        tol=1e-6,
         prints=False
     ):
         self.lr = lr
@@ -77,12 +78,12 @@ class NN:
                 print('Epoch:', i)
                 print('Accuracy Score:', accuracy,
                       'Loss:', loss)
-            if (is_adaptive and
-                    i > 150 and
-                    math.fabs(loss_hist[-2] - loss_hist[-1]) < tol and
-                    math.fabs(loss_hist[-2] - loss_hist[-1]) < tol):
-                print('Learning Rate adjusted\n\n\n')
-                self.lr /= 5
+            # if (is_adaptive and
+            #         i > 150 and
+            #         math.fabs(loss_hist[-2] - loss_hist[-1]) < tol and
+            #         math.fabs(loss_hist[-2] - loss_hist[-1]) < tol):
+            #     print('Learning Rate adjusted\n\n\n')
+            #     self.lr /= 5
 
     def forward_pass(
         self,
@@ -109,7 +110,10 @@ class NN:
         activations = self.layers[-1].activations
 
         # Last layer activation is always sigmoid
-        gradient = activations * (1 - activations)
+        gradient = self.activation_gradient(
+                                    activations,
+                                    self.layers[-1].activation_function)
+
         diff = (Y.T - activations)
 
         delta_k = diff * gradient
@@ -122,7 +126,9 @@ class NN:
         for l_num in reversed(range(1, len(self.layers)-1)):
             activations = self.layers[l_num].activations
 
-            gradient = activations * (1 - activations)
+            gradient = self.activation_gradient(
+                                    activations,
+                                    self.layers[l_num].activation_function)
             self.layers[l_num+1].weights = new_weights
             delta_k = (gradient *
                        (self.layers[l_num+1].weights[:, 1:].T @ delta_k))
@@ -155,6 +161,19 @@ class NN:
         norm = np.linalg.norm(Y_true - Y_pred, ord='fro')
         norm = norm ** 2
         return norm / (2 * Y_true.shape[0])
+
+    def activation_gradient(
+        self,
+        activations,
+        activation_function
+    ):
+        if activation_function == 'sigmoid':
+            return activations * (1 - activations)
+        else:
+            gradient = activations.copy()
+            gradient[activations <= 0] = 0
+            gradient[activations > 0] = 1
+            return gradient
 
 
 class Layer:
