@@ -32,7 +32,8 @@ def traverse_tree(
 def plot_accuracies(
     d_tree,
     data,
-    gap=1
+    gap=20,
+    rev=False
 ):
     (X_train, X_test, X_val, Y_train, Y_test, Y_val,
         prev_train, prev_test, prev_val) = data
@@ -64,7 +65,8 @@ def plot_accuracies(
         X.append(num_nodes - idx)
 
     ax = plt.gca()
-
+    if rev:
+        ax.invert_xaxis()
     ax.plot(X, train_acc_hist, label='Train Accuracy')
     ax.plot(X, test_acc_hist, label='Test Accuracy')
     ax.plot(X, val_acc_hist, label='Validation Accuracy')
@@ -72,15 +74,18 @@ def plot_accuracies(
     ax.set_xlabel('Number of nodes')
     ax.set_ylabel('Prediction Accuracy')
 
-    # plt.xlim(num_nodes, 0)
     ax.legend()
     plt.show()
+
+    return X, train_acc_hist, test_acc_hist, val_acc_hist
 
 
 def part_a(
     train_filename,
     test_filename,
-    val_filename
+    val_filename,
+    gap=200,
+    rev=False
 ):
     df_train = pandas.read_csv(train_filename, skiprows=[1])
     df_train = df_train.iloc[:, 1:]
@@ -128,7 +133,15 @@ def part_a(
 
     data = (X_train, X_test, X_val, Y_train, Y_test, Y_val,
             init_train, init_test, init_val)
-    plot_accuracies(d_tree, data, gap=200)
+    plot_accuracies(d_tree, data, gap=200, rev=rev)
+
+
+def part_b(
+    train_filename,
+    test_filename,
+    val_filename
+):
+    part_a(train_filename, test_filename, val_filename, gap=1000, rev=True)
 
 
 def part_c(
@@ -344,8 +357,8 @@ def main(
 ):
     if part == 'a':
         part_a(train_filename, test_filename, val_filename)
-    # elif part == 'b':
-    #     part_b(train_filename, test_filename)
+    elif part == 'b':
+        part_b(train_filename, test_filename, val_filename)
     elif part == 'c':
         part_c(train_filename, test_filename, val_filename)
     elif part == 'd':
