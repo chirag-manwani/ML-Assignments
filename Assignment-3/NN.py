@@ -47,7 +47,7 @@ class NN:
         lr=0.1,
         epochs=1000,
         adaptive='fixed',
-        tol=1e-4,
+        tol=1e-5,
         prints=False
     ):
         self.lr = lr

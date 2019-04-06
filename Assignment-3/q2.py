@@ -55,7 +55,7 @@ def part_b(
     X_train = data.iloc[:, :85].values
     Y_train = data.iloc[:, 85:].values
     nn = NN(nI, nO, arch_list, activation_function=activation)
-    nn.fit(X_train, Y_train, lr=1, epochs=100,
+    nn.fit(X_train, Y_train, lr=1, epochs=1000,
            batch_size=batch_size, adaptive=lr_type, prints=True)
 
 
@@ -81,11 +81,12 @@ def part_c(
     test_acc = []
     for units in hidden_layer_units:
         nn = NN(nI, nO, [units] * layers, activation_function=activation)
-        nn.fit(X_train, Y_train, lr=1, epochs=100,
-               batch_size=batch_size, adaptive=lr_type)
+        nn.fit(X_train, Y_train, lr=1, epochs=250,
+               batch_size=batch_size, adaptive=lr_type, prints=True)
 
         train_acc.append(nn.error(X_train, Y_train) * 100)
         test_acc.append(nn.error(X_test, Y_test) * 100)
+        print('Done', units, train_acc[-1], test_acc[-1])
 
     print('Train Set Accuracy', train_acc)
     print('Test Set Accuracy', test_acc)
@@ -103,6 +104,23 @@ def part_c(
     plt.show()
 
 
+def part_d(
+    config_file,
+    train_filename,
+    test_filename
+):
+    part_c(config_file, train_filename, test_filename, layers=2)
+
+
+def part_e(
+    config_file,
+    train_filename,
+    test_filename
+):
+    part_c(config_file, train_filename, test_filename)
+    part_c(config_file, train_filename, test_filename, layers=2)
+
+
 def main(
     args
 ):
@@ -114,13 +132,11 @@ def main(
     elif part == 'c':
         part_c(args[0], args[1], args[2])
     elif part == 'd':
-        part_c(args[0], args[1], args[2], 2)
-    # elif part == 'e':
-    #     part_e(train_filename, test_filname)
+        part_d(args[0], args[1], args[2])
+    elif part == 'e':
+        part_d(args[0], args[1], args[2])
     # elif part == 'f':
     #     part_e(train_filename, test_filname)
-    # elif part == 'g':
-    #     part_g(train_filename, test_filname)
     else:
         print('Invalid question part. a-f Valid')
         exit()
