@@ -7,7 +7,10 @@ def main(
     args
 ):
     train_path = args[0]
-    utils.pca_fit(train_path)
+    pca_path = args[1]
+
+    utils.pca_fit(train_path, pca_path)
+    utils.create_episode_data(train_path, pca_path)
 
 
 if __name__ == "__main__":
