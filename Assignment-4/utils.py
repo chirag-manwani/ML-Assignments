@@ -112,3 +112,33 @@ def create_training_data(
     X_train = np.array(X_train)
     root = Path(root)
     pickle.dump(X_train, open('X_train', 'wb'))
+
+
+def create_val_data(
+    val_path,
+    pca_path
+):
+    pca = pickle.load(open(pca_path, 'rb'))
+    X_val = []
+    i = 0
+    for root, _, img_files in os.walk(val_path):
+        img_list = []
+        for img_file in sorted(img_files):
+            if img_file.endswith('png'):
+                img_path = os.path.join(root, img_file)
+                flat_image = process_image(img_path)
+                img_list.append(flat_image)
+        if len(img_list) == 0:
+            continue
+        row = np.array(img_list)
+        
+        row = pca.transform(row)
+        print(row.shape)
+        if i == 1:
+            break
+        i += 1
+        X_val.append(row)
+    X_val = np.array(X_val)
+    print(X_val.shape)
+
+create_val_data('/media/cmkmanwani/hdd/chirag/validation_dataset', './pca_uncropped')
