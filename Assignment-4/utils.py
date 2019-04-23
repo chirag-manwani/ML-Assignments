@@ -119,6 +119,8 @@ def create_val_data(
     pca_path
 ):
     pca = pickle.load(open(pca_path, 'rb'))
+    rew_path = os.path.join(val_path, 'rewards.csv')
+    rewards = pandas.read_csv(rew_path, header=None).values[:, 1]
     X_val = []
     i = 0
     for root, _, img_files in os.walk(val_path):
@@ -130,15 +132,16 @@ def create_val_data(
                 img_list.append(flat_image)
         if len(img_list) == 0:
             continue
-        row = np.array(img_list)
         
+        rew_idx = int(root.split('/')[-1])
+
+        row = np.array(img_list)
         row = pca.transform(row)
-        print(row.shape)
-        if i == 1:
-            break
-        i += 1
+        row = row.reshape(250)
+
+        row = np.concatenate([row, [rew_idx]], axis=0)
+        print(row, rewards[rew_idx])
         X_val.append(row)
     X_val = np.array(X_val)
     print(X_val.shape)
-
-create_val_data('/media/cmkmanwani/hdd/chirag/validation_dataset', './pca_uncropped')
+    
