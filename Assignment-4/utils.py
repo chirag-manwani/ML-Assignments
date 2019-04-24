@@ -139,9 +139,7 @@ def create_val_data(
         row = pca.transform(row)
         row = row.reshape(250)
 
-        row = np.concatenate([row, [rew_idx]], axis=0)
-        print(row, rewards[rew_idx])
+        row = np.concatenate([row, [rewards[rew_idx]]], axis=0)
         X_val.append(row)
-    X_val = np.array(X_val)
-    print(X_val.shape)
-    
+    X_val = np.array(X_val, dtype='float32')
+    pickle.dump(X_val, open('data_val', 'wb'))
