@@ -1,25 +1,25 @@
-import imageio as io
 import numpy as np
 import os
 import pickle
-import queue
 import pandas
+import keras.backend as K
 from PIL import Image
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 from itertools import combinations
 
+
+input_shape = (210, 160, 5)
 # Preprocessing data utilities
 
 
 def process_image(
     img_path
 ):
-    left_crop = 6
-    right_crop = -6
-    top_crop = 40
-    bottom_crop = -40
+    # left_crop = 6
+    # right_crop = -6
+    # top_crop = 40
+    # bottom_crop = -40
 
     img = np.array(Image.open(img_path).convert('L'))
     # img = img[top_crop:bottom_crop, left_crop:right_crop]
@@ -87,7 +87,7 @@ def get_combinations(
     rows = []
     for comb in comb_list:
         rows.append(np.concatenate(comb, axis=0))
-    
+
     return rows
 
 
@@ -122,7 +122,6 @@ def create_val_data(
     rew_path = os.path.join(val_path, 'rewards.csv')
     rewards = pandas.read_csv(rew_path, header=None).values[:, 1]
     X_val = []
-    i = 0
     for root, _, img_files in os.walk(val_path):
         img_list = []
         for img_file in sorted(img_files):
@@ -132,7 +131,7 @@ def create_val_data(
                 img_list.append(flat_image)
         if len(img_list) == 0:
             continue
-        
+
         rew_idx = int(root.split('/')[-1])
 
         row = np.array(img_list)
@@ -143,3 +142,34 @@ def create_val_data(
         X_val.append(row)
     X_val = np.array(X_val, dtype='float32')
     pickle.dump(X_val, open('data_val', 'wb'))
+
+
+def f1(y_true, y_pred):
+    def recall(y_true, y_pred):
+        """Recall metric.
+
+        Only computes a batch-wise average of recall.
+
+        Computes the recall, a metric for multi-label classification of
+        how many relevant items are selected.
+        """
+        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+        recall = true_positives / (possible_positives + K.epsilon())
+        return recall
+
+    def precision(y_true, y_pred):
+        """Precision metric.
+
+        Only computes a batch-wise average of precision.
+
+        Computes the precision, a metric for multi-label classification of
+        how many selected items are relevant.
+        """
+        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+        predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+        precision = true_positives / (predicted_positives + K.epsilon())
+        return precision
+    precision = precision(y_true, y_pred)
+    recall = recall(y_true, y_pred)
+    return 2*((precision*recall)/(precision+recall+K.epsilon()))
